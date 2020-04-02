@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--bootstrap-->
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Skyline Queries Constrained by Multi-Cost Transportation Networks</title> <!-- set the title -->
+    <link rel="icon" href="logo.ico" type="image/x-icon">  <!-- set the logo -->
+
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+        .container{
+            width:100%;
+            height:100%;
+            margin:0;
+        }
+        .header{
+            width:100%;
+            height:70px;
+            background: #323232;
+        }
+        .content{
+            position: relative;
+            width: 1425px;
+            margin:0;
+            color: white;
+        }
+        .content_footer{
+            position: relative;
+            height:60px;
+            background: #e7fff1;
+            width:100%
+        }
+        #map{
+            margin-left: 200px;
+            height:690px;
+            width:100%;
+            float:right;
+        }
+        #listing {
+            margin-top: 140px;
+            margin-left: 5px;
+            position: absolute;
+            width: 240px;
+            height: 690px;
+            overflow: auto;
+            left: 0px;
+            top: 0px;
+            cursor: pointer;
+            overflow-x: hidden;
+        }
+        .sameline{
+            display:inline;
+        }
+        .hotelIcon {
+            width: 24px;
+            height: 24px;
+        }
+        #resultsTable {
+            border-collapse: collapse;
+            width: 240px;
+        }
+        .iw_table_row {
+            height: 18px;
+        }
+        .iw_attribute_name {
+            font-weight: bold;
+            text-align: right;
+        }
+        .iw_table_icon {
+            text-align: right;
+        }
+        #letter{
+            face : "Century Gothic, Arial";
+            font-weight: lighter;
+        }
+        .Select_City{
+            face : "Century Gothic, Arial";
+            font-weight: lighter;
+        }
+        .Near{
+            face : "Century Gothic, Arial";
+            font-weight: lighter;
+        }
+        input{
+
+        }
+        .test::-webkit-input-placeholder{
+            color: darkgray;
+            face : "Century Gothic, Arial";
+        }
+        body{
+            background-color: #000000;
+        }
+        /* The popup bubble styling. */
+        .popup-bubble {
+            /* Position the bubble centred-above its parent. */
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -100%);
+            /* Style the bubble. */
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: sans-serif;
+            overflow-y: auto;
+            max-height: 80px;
+            box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+        }
+        /* The parent of the bubble. A zero-height div at the top of the tip. */
+        .popup-bubble-anchor {
+            /* Position the div a fixed distance above the tip. */
+            position: absolute;
+            width: 100%;
+            bottom: /* TIP_HEIGHT= */ 8px;
+            left: 0;
+        }
+        /* This element draws the tip. */
+        .popup-bubble-anchor::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Center the tip horizontally. */
+            transform: translate(-50%, 0);
+            /* The tip is a https://css-tricks.com/snippets/css/css-triangle/ */
+            width: 0;
+            height: 0;
+            /* The tip is 8px high, and 12px wide. */
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: /* TIP_HEIGHT= */ 8px solid white;
+        }
+        /* JavaScript will position this div at the bottom of the popup tip. */
+        .popup-container {
+            cursor: auto;
+            height: 0;
+            position: absolute;
+            /* The max width of the info window. */
+            width: 220px;
+        }
+    </style>
+<!-- add search type select; range defult 500; busstop defult 10; search Method select-->
+</head>
+<!-- Add the javaScript path -->
+<!--script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script--->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+<body>
+    <!--Set the window -->
+    <div class="container">
+        <!--Set the header bar-->
+        <div class="header">
+            <br>
+            <h1 class="sameline" style="font-size:30px; text-align: left; color: white;" id = "letter" > CSQ
+                &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+
+                <!-- Select the City-->
+                <font style="font-size: 20px" class = "Select_City">City:</font>
+                <label for="City">
+                </label><select name="" id="City" style="width:110px;height:30px;background-color: #323232; border-width:0; color: white">
+                    <option value="" selected>--Select a City--</option>
+                    <option value="LA">Los Angeles</option>
+                    <option value="SF">San Francisco</option>
+                    <option value="NY">New York</option>
+                </select>
+                &nbsp
+                <!-- Enter the address -->
+                <a style="font-size: 20px" class = "Near">NEAR: </a> <label for="address"></label><input id="address" list="drop-down-list" placeholder="Please Enter a address" style="background-color: #323232; border-width: 0;  width:150px; height:25px; color: white" class="test" type="text" value="">
+                <datalist id="drop-down-list">
+                    <option value="37.7749009,-122.4375083">0 Nopa</option>
+                    <option value="37.8058724,-122.4206313">1 Restaurant Gary Danko</option>
+                    <option value="37.7795354,-122.392263">2 Saison</option>
+                    <option value="37.7918788,-122.3929367">3 eatsa</option>
+                    <option value="37.7897173,-122.3994262">4 Yank Sing</option>
+                    <option value="37.760402,-122.4197572">5 Lazy Bear</option>
+                    <option value="37.7970054,-122.3999047">6 Kokkari Estiatorio</option>
+                    <option value="37.7628427,-122.4322036">7 Kokkari Estiatorio</option>
+                    <option value="37.7589326,-122.4122707">8 Flour + Water</option>
+                    <option value="37.7564574,-122.4192867">9 Foreign Cinema</option>
+                    <option value="37.7614142,-122.4243741">10 Delfina</option>
+                    <option value="37.7961831,-122.3937001">11 The Slanted Door</option>
+                    <option value="37.7915485,-122.421442">12 Acquerello</option>
+                    <option value="37.785452,-122.399036">13 Benu</option>
+                    <option value="37.797515,-122.4033559">14 Quince</option>
+                    <option value="37.79332,-122.392761">15 Boulevard</option>
+                    <option value="37.7804334,-122.481706">16 Aziza</option>
+                    <option value="37.798144,-122.4220082">17 La Folie</option>
+                    <option value="37.7611925,-122.4196653">18 Mission Chinese Food</option>
+                    <option value="37.8067937,-122.4321992">19 Greens Restaurant</option>
+                    <option value="37.757119,-122.421011">20 DOSA on Valencia</option>
+                    <option value="37.7873507,-122.4338216">21 SPQR</option>
+                    <option value="37.7934609,-122.3996416">22 Michael Mina</option>
+                    <option value="37.7981201,-122.4187108">23 Stones Throw</option>
+                    <option value="37.7993601,-122.397385">24 The Waterfront Restaurant & Cafe</option>
+                    <option value="37.7829023,-122.4190358">25 Brenda's French Soul Food</option>
+                    <option value="37.7490506,-122.4201366">26 Al's Place</option>
+                    <option value="37.7762838,-122.4264238">28 Cliff House</option>
+                    <option value="37.7949398,-122.3959182">29 Suppenküche</option>
+                    <option value="37.7905123,-122.3891332">30 Sens</option>
+                    <option value="37.7972398,-122.406004">31 Waterbar</option>
+                </datalist>
+
+
+                <!-- Or use the GPS find the location-->
+                <button onclick="GPS(); showCircleGPS()"  style="background-color: #323232; border-width: 0; width: 30px;height: 30px"> 🛰️ </button>
+
+                <!-- Find the location -->
+                <button onclick="UserInputAddress_to_accordinates(); showCircleLocation()" id="submit" class="sameline" style="background-color:#323232; width: 76px;height: 30px;color: white; border-width:0;"> Search </button>
+                &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+
+                <!-- Preload the results -->
+                <label for = "preload">
+                </label><select id = "preload" style="width:205px;height:30px;background-color: #323232; border-width: 0; color: white">
+                    <!-- Approximate Mixed index Preload -->
+                    <option selected>--Please Select The Preload Demo--</option>
+                    <option value="LA_approxMixed_500" city="LA" Range="500" BusStop="20" Method="approxMixedIndexedById"  Type="restaurant" LocationID="1233">Los Angeles Approximate Mixed 400 Range 20 BusStop</option>
+                    <option value="NY_approxMixed_500" city="NY" Range="500" BusStop="0" Method="approxMixedIndexedById"  Type="lodging"    LocationID="100">New york Approximate Mixed 500 Range unlimited BusStop</option>
+                    <option value="SF_approxMixed_500" city="SF" Range="500" BusStop="0" Method="approxMixedIndexedById"  Type=""           LocationID="100">San Francisco Approximate Mixed 500 Range unlimited BusStop</option>
+                    <option value="LA_approxMixed_500" city="LA" Range="500" BusStop="10" Method="approxMixedIndexedById" Type=""           LocationID="100">Los Angeles Approximate Mixed 200 Range 10 BusStop</option>
+                    <option value="NY_approxMixed_200" city="NY" Range="500" BusStop="30" Method="approxMixedIndexedById" Type=""           LocationID="100">New york Approximate Mixed 500 Range 30 BusStop</option>
+                    <option value="SF_approxMixed_200" city="SF" Range="200" BusStop="30" Method="approxMixedIndexedById" Type="lodging"    LocationID="100">San Francisco Approximate Mixed 200 Range 30 BusStop</option>
+                    <!-- Approximate Range Index Preload -->
+                    <option value="LA_approxRange" city="LA" Range="500" BusStop="10" Method="approxRangeIndexedById" Type=""           LocationID="100">Los Angeles Approximate Range with 500 Range 10 BusStop</option>
+                    <option value="NY_approxRange" city="NY" Range="500" BusStop="10" Method="approxRangeIndexedById" Type="lodging"    LocationID="100">New york Approximate Range with 500 Range 10 BusStop</option>
+                    <option value="SF_approxRange" city="SF" Range="500" BusStop="10" Method="approxRangeIndexedById" Type="restaurant" LocationID="100">San Francisco Approximate Range with 500 Range 10 BusStop</option>
+                    <!-- Improved exact method Preload-->
+                    <option value="NY_ExactImproved" city="NY" Method="ExactImprovedIndex" Type="" LocationID="1233" Range="" BusStop="10">New york Improved Exact with 10 BusStop</option>
+                    <option value="SF_ExactImproved" city="SF" Method="ExactImprovedIndex" Type="" LocationID="1233" Range="" BusStop="10">San Francisco Improved Exact with 10 BusStop</option>
+
+                    <!--
+                    <option value="LA_ExactImproved" city="LA" Method="ExactImprovedIndex" Type="lodging" LocationID="100" Range="" BusStop="10">Los Angeles Improved Exact</option>
+                    -->
+                </select>
+                <button style="background-color: #323232; color:white; border-width: 0;" onclick="Warning();"> Preload </button>
+            </h1>
+        </div>
+
+        <!--Set the filter bar-->
+        <div class="content">
+            <!--Set the filter part-->
+            <p>  &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+
+                <!-- Select Method -->
+                <label for="Method">
+                </label><select name="" id="Method" style="width:127px;height:30px;background-color: #000000; border-width:0; color: white">
+                    <option value="" selected>--Method--</option>
+                    <option value="approxMixedIndexedByLocation">Mixed Approximate</option>
+                    <option value="approxRangeIndexedByLocation">Ranged Approximate</option>
+                    <option value="ExactImprovedIndex">Exact Improved Index</option>
+                </select>
+                &nbsp
+                <!-- Scope -->
+                <a style="font-size: 15px"> </a> <input id="scope" placeholder="WALKING DISTANCE: Meters" class="test" style="background-color: #000000; border-width: 0; width: 150px; height: 25px; color: white" type="int" value="">
+                &nbsp
+                <!--Select the busStop-->
+                <label for="BusStop">
+                </label><select name="" id="BusStop" style="width:90px;height:30px;background-color: #000000; border-width: 0; color: white">
+                    <option value="" selected>--BusStop--</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="0">Unlimited</option>
+                </select>
+                &nbsp
+                <!--Select the Search Type-->
+                <label for="type">
+                </label><select name="" id="type" style="width:105px;height:30px; background-color: #000000; border-width: 0; color: white">
+                    <option value="" selected>--Search Type--</option>
+                    <option value="lodging" >Lodging</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="food">Food</option>
+                </select>
+
+                <!--Show Result-->
+                <button onclick="addCircle(map); build_url()" id="Search" style=" background-color:#000000; width: 90px;height: 25px;color: white; border-width: 0;"> Show Result </button>
+
+
+                <!-- Price
+                Price:
+                <button style="background-color: #000000; color:white; border-width: 0;"> $ </button>
+                <button style="background-color: #000000; color:white; border-width: 0;"> $$ </button>
+                <button style="background-color: #000000; color:white; border-width: 0;"> $$$ </button>
+                <button style="background-color: #000000; color:white; border-width: 0;"> $$$$ </button>
+                &nbsp &nbsp &nbsp
+                 Star
+                Star:
+                <button style="background-color: #000000; border-width: 0;"> ⭐️ </button>
+                <button style="background-color: #000000; border-width: 0;"> ⭐⭐ </button>
+                <button style="background-color: #000000; border-width: 0;"> ⭐⭐⭐ </button>
+                <button style="background-color: #000000; border-width: 0;"> ⭐⭐⭐⭐ </button>
+                <button style="background-color: #000000; border-width: 0;"> ⭐⭐⭐⭐⭐ </button>
+                &nbsp &nbsp &nbsp
+                 Wi-Fi
+                <button style="color:white; background-color:#000000; border-width: 0; "> Free Wi-Fi </button>
+                &nbsp &nbsp &nbsp
+                 Open Now
+                <button style="color:white; background-color:#000000; border-width: 0;"> 🕒Open Now </button>
+                &nbsp &nbsp &nbsp
+                <button style="background-color:#000000; border-width: 0; width: 80px;height: 25px;color: white; "> Filter </button>
+                -->
+            </p>
+
+            <div style="display: none">
+                <div id="info-content">
+                    <table>
+                        <tr id="iw-url-row" class="iw_table_row">
+                            <td id="iw-icon" class="iw_table_icon"></td>
+                            <td id="iw-url"></td>
+                        </tr>
+                        <tr id="iw-address-row" class="iw_table_row">
+                            <td class="iw_attribute_name">Address:</td>
+                            <td id="iw-address"></td>
+                        </tr>
+                        <tr id="iw-phone-row" class="iw_table_row">
+                            <td class="iw_attribute_name">Telephone:</td>
+                            <td id="iw-phone"></td>
+                        </tr>
+                        <tr id="iw-rating-row" class="iw_table_row">
+                            <td class="iw_attribute_name">Rating:</td>
+                            <td id="iw-rating"></td>
+                        </tr>
+                        <tr id="iw-website-row" class="iw_table_row">
+                            <td class="iw_attribute_name">Website:</td>
+                            <td id="iw-website"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+            <!--Set the map part-->
+            <div id="map" ></div>
+
+            <script>
+
+                $(document).ready(function(){
+                    $('#letter > button:nth-child(10)').click(function () {
+                        SetPreloadUrl();
+                    });
+
+
+                    $("#City").change(function(){
+                        removeGeCoderMarker();
+                        removeBustationMarker();
+                        removeSpecialMarker();
+                        clearDashLine();
+                        clearDashLineStart();
+                        clearPolylines();
+                        clearMarkers();
+                        clearResults();
+                        removeMarker();
+                        removeCircle();
+                        ShowResultCity();
+                        UserSelectToAccordinates();
+                        ZoomCity(locationCoordinate);
+                        SetInterestPoint();
+                    });
+
+                    // Use the Jquery to add the select event for Preload
+                    $("#preload").change(function() {
+                        GetPreload();
+                    });
+
+                });
+
+
+                // Use the Jquery to add the select event for City
+
+            </script>
+
+            <script>
+                var Arr_text;
+                var search_suggestion=[];
+                var interest_points_path = "";
+                var url ="data/approxMixedIndexedById/LA_Method_approxMixedIndexedById_ByID_100_type_restaurant_Range_1000_busStops_0.json";
+                var Method,BusStop,Type, City, PreloadCity, PreloadMethod, PreloadMethodShow, PreloadBusStop, PreloadType, PreloadTypeShow, PreloadRange, PreloadLocationID, PreloadLocationIDShow;
+
+                function SetInterestPoint(){
+                    interest_points_path = "Points_Of_Interest_List/staticNode_real_"+City+".txt";
+                    readTextFile(interest_points_path);
+                    AddOption();
+                }
+
+                function UserInputAddress_to_accordinates() {
+                    var address = document.getElementById('address').value;
+                    getAddress(address);
+                }
+
+                function UserSelectToAccordinates() {
+                    getAddress(City);
+                }
+
+                function ShowResultCity(){
+                    var select = document.getElementById("City");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    City = values;
+                }
+
+                function showResultMethod(){
+                    var select = document.getElementById("Method");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    Method = values;
+                }
+
+                function showResultBusStop(){
+                    var select = document.getElementById("BusStop");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    BusStop = values;
+                }
+
+                function showResultType(){
+                    var select = document.getElementById("type");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    Type = values;
+                }
+
+                function build_url(){
+                    ShowResultCity();
+                    showResultMethod();
+                    showResultBusStop();
+                    showResultType();
+                    UserInputAddress_to_accordinates();
+                    var Scope = document.getElementById("scope").value;
+                    if(Method === "ExactImprovedIndex"){
+                        url = "http://localhost:8080/csDemoWS/rest/query/"+Method+"/"+City+"/"+locationCoordinate.lat+"/"+locationCoordinate.lng+"/"+Type+"/"+BusStop;
+                        onPlaceChanged();
+                    }
+                    else{
+                        if(Scope === ""){
+                            alert("Please Check the input of Working Distance");
+                        }
+                        else{
+                            url = "http://localhost:8080/csDemoWS/rest/query/"+Method+"/"+City+"/"+locationCoordinate.lat+"/"+locationCoordinate.lng+"/"+Scope+"/"+Type+"/"+BusStop;
+                            onPlaceChanged();
+                        }
+                    }
+                }
+
+                function GetPreload(){
+                    var select = document.getElementById("preload");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    var city = select.options[index].getAttribute("city");
+                    var range = select.options[index].getAttribute("Range");
+                    var busStop = select.options[index].getAttribute("BusStop");
+                    var method = select.options[index].getAttribute("Method");
+                    var type = select.options[index].getAttribute("Type");
+                    var ID = select.options[index].getAttribute("LocationID");
+
+                    if(values==='LA_approxMixed_500'){
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadType = type;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "34.0758345,-118.374605";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="NY_approxMixed_500"){
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadType = type;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "40.7623829, lng: -73.9796782";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="SF_approxMixed_500"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "37.7835347,-122.40926";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==='LA_approxMixed_200'){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "34.0758345,-118.374605";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="NY_approxMixed_200"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "40.7225134,-73.9829089";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="SF_approxMixed_200"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "37.7894785,-122.4059049";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="LA_approxRange"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "34.0452741,-118.2384681";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="NY_approxRange"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "40.7623829,-73.9796782";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="SF_approxRange"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "37.7253486,-122.4629496";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="LA_ExactImproved"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "34.0818523, -118.2713131";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="NY_ExactImproved"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "40.7488705, -73.9501223";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else if(values==="SF_ExactImproved"){
+                        PreloadType = type;
+                        PreloadCity = city;
+                        PreloadMethod = method;
+                        PreloadBusStop = busStop;
+                        PreloadRange = range;
+                        PreloadLocationID = ID;
+                        PreloadLocationIDShow = "37.7641209, -122.468116";
+                        // Translate the Preload Type in order to show the drop-down list
+                        if(type === ""){
+                            PreloadTypeShow = "";
+                        }
+                        else{
+                            PreloadTypeShow = type;
+                        }
+                        // Translate the preload method in order to show the method in the drop-down list
+                        if((method === "approxMixedIndexedById") || (method ==="approxMixedIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else if((method === "approxRangeIndexedById") || (method ==="approxRangeIndexedByLocation")){
+                            PreloadMethodShow = "approxMixedIndexedByLocation";
+                        }
+                        else{
+                            PreloadMethodShow = method;
+                        }
+                        $("#scope").val(PreloadRange);
+                        $("#type").val(PreloadTypeShow);
+                        $("#BusStop").val(PreloadBusStop);
+                        $("#Method").val(PreloadMethodShow);
+                        $("#City").val(PreloadCity);
+                        $("#address").val(PreloadLocationIDShow);
+                    }
+                    else{
+                        alert("Preload error");
+                    }
+                }
+
+                function SetPreloadUrl(){
+                    var select = document.getElementById("preload");
+                    var index = select.selectedIndex;
+                    var values = select.options[index].value;
+                    var text = select.options[index].text;
+                    // Preload approxMixedIndexedByIocation example
+                    if(PreloadMethod === "ExactImprovedIndex"){
+                        if(confirm("You Selected the Exact improved method, it might take more than 10 minutes to process, Do you want to continue?")) {
+                            url = "http://localhost:8080/csDemoWS/rest/query/" + PreloadMethod + "/" + PreloadCity + "/100/" + PreloadType + "/" + PreloadBusStop;
+                        }
+                    }
+                    else{
+                        url = "http://localhost:8080/csDemoWS/rest/query/"+PreloadMethod+"/"+PreloadCity+"/100/"+PreloadRange+"/"+PreloadType+"/"+PreloadBusStop;
+                    }
+                    console.log(url);
+                }
+
+                function Warning(){
+                    if(PreloadMethod === "ExactImprovedIndex"){
+                        if(confirm("You Selected the Exact improved method, it might take more than 10 minutes to process, Do you want to continue?")){
+                            onPlaceChanged();
+                            ZoomCity(PreloadLocationIDShow);
+                        }
+                        else{
+                            // Do nothing
+                        }
+                    }
+                    else{
+                        onPlaceChanged();
+                        ZoomCity(PreloadLocationIDShow);
+                    }
+                }
+
+                // function to read the points of interesting list
+                function readTextFile(file)
+                {
+                    var rawFile = new XMLHttpRequest();
+                    rawFile.open("GET", file, false);
+                    rawFile.onreadystatechange = function ()
+                    {
+                        if(rawFile.readyState === 4)
+                        {
+                            if(rawFile.status === 200 || rawFile.status === 0)
+                            {
+                                var allText = rawFile.responseText;
+                                Arr_text = allText.split("\n");
+                                for(var i=0; i<Arr_text.length-1; i++){
+                                    var temp = Arr_text[i].split(",");
+                                    var Final_text = {
+                                        index:temp[0],
+                                        location: {lat: Number(temp[1]), lng: Number(temp[2])},
+                                        Number1: temp[3],
+                                        Number2: temp[4],
+                                        Number3: temp[5],
+                                        locationID:temp[6],
+                                        Name: temp[7]
+                                    };
+                                    search_suggestion.push(Final_text);
+                                }
+                            }
+                        }
+                    };
+                    rawFile.send(null);
+                    console.log(file);
+                    //console.log(search_suggestion);
+                }
+
+                // Function to add the options into datalist
+                function AddOption(){
+                    var options = '';
+                    for(var i=0; i<search_suggestion.length; i++){
+                        options+='<option value="'+search_suggestion[i]["Name"]+'" >'+search_suggestion[i]["index"]+' </option>';
+                    }
+                    //console.log(options);
+                    document.getElementById('drop-down-list').innerHTML = options;
+                }
+
+            </script>
+
+
+            <!--Read the JSON and rebuild the Local Json-->
+            <!--Deal with the end points-->
+            <script>
+                var result = [];
+                var strLat_start,strLon_start,arrLat_start,arrLon_start;
+                var strLat_end,strLon_end,arrLat_end,arrLon_end;
+                var str_Walking_cost, str_ticket_cost, str_distance_cost, str_time_cost, str_hotelLevel_cost, str_hotelprice_cost, str_hotelInterest_cost;
+                var arr_Walking_cost, arr_ticket_cost, arr_distance_cost, arr_time_cost, arr_hotelLevel_cost, arr_hotelprice_cost, arr_hotelInterest_cost;
+                var result_Walking_cost="",result_ticket_cost="",result_distance_cost="",result_time_cost="",result_hotelLevel_cost="",result_hotelprice_cost="",result_hotelInterest_cost="";
+                var str_name, arr_name;
+                var resultLat_start="";
+                var resultLon_start="";
+                var resultLat_end="";
+                var resultLon_end="";
+                var result_name="";
+                var startPoints = [];
+                var endPoints = [];
+                var results = [];
+                var ResultLength=0;
+                var ReadResult=49;
+
+
+                function Rebuild_data() {
+                    console.log(url);
+                    result = [];
+                    startPoints = [];
+                    endPoints = [];
+                    resultLat_start="";
+                    resultLon_start="";
+                    resultLat_end="";
+                    resultLon_end="";
+                    result_name="";
+                    result_Walking_cost="";
+                    result_ticket_cost="";
+                    result_distance_cost="";
+                    result_time_cost="";
+                    result_hotelLevel_cost="";
+                    result_hotelprice_cost="";
+                    result_hotelInterest_cost="";
+
+                    $.blockUI({ message: '<img src="loading.gif" /> <h1>Just a moment...</h1>'});
+
+                    // store the json result from the json to local variable
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        dataType: "json",
+                        async: true,
+                        success: function (data) {
+                            for (var i=0; i < ReadResult; i++) {
+                                if(data[i]!=null) {
+                                    result.push(data[i]);
+                                    ResultLength = i;
+                                }
+
+                            }
+                            // get and mark all the start and end points into the google map
+                            $.each(result, function (i, n) {
+                                //获取对象中属性为optionsValue的值
+                                resultLat_start += n["start_location"][0] + ",";
+                                resultLon_start += n["start_location"][1] + ",";
+                                resultLat_end += n["end_location"][0] + ",";
+                                resultLon_end += n["end_location"][1] + ",";
+                                result_name += n["end_name"] + ",";
+                                result_Walking_cost += n["costs"][0]+",";
+                                result_ticket_cost  += n["costs"][1]+",";
+                                result_distance_cost += n["costs"][2]+",";
+                                result_time_cost += n["costs"][3]+",";
+                                result_hotelLevel_cost += n["costs"][4]+",";
+                                result_hotelprice_cost += n["costs"][5]+",";
+                                result_hotelInterest_cost += n["costs"][6]+",";
+                            });
+
+                            // Process the 7 costs
+                            str_Walking_cost = JSON.stringify(result_Walking_cost);
+                            str_ticket_cost = JSON.stringify(result_ticket_cost);
+                            str_distance_cost = JSON.stringify(result_distance_cost);
+                            str_time_cost = JSON.stringify(result_time_cost);
+                            str_hotelLevel_cost = JSON.stringify(result_hotelLevel_cost);
+                            str_hotelprice_cost = JSON.stringify(result_hotelprice_cost);
+                            str_hotelInterest_cost = JSON.stringify(result_hotelInterest_cost);
+
+                            str_Walking_cost = jQuery.parseJSON(str_Walking_cost);
+                            str_ticket_cost = jQuery.parseJSON(str_ticket_cost);
+                            str_distance_cost = jQuery.parseJSON(str_distance_cost);
+                            str_time_cost = jQuery.parseJSON(str_time_cost);
+                            str_hotelLevel_cost = jQuery.parseJSON(str_hotelLevel_cost);
+                            str_hotelprice_cost = jQuery.parseJSON(str_hotelprice_cost);
+                            str_hotelInterest_cost = jQuery.parseJSON(str_hotelInterest_cost);
+
+                            arr_Walking_cost = str_Walking_cost.split(",");
+                            arr_ticket_cost = str_ticket_cost.split(",");
+                            arr_distance_cost = str_distance_cost.split(",");
+                            arr_time_cost = str_time_cost.split(",");
+                            arr_hotelLevel_cost = str_hotelLevel_cost.split(",");
+                            arr_hotelprice_cost = str_hotelprice_cost.split(",");
+                            arr_hotelInterest_cost = str_hotelInterest_cost.split(",");
+
+                            // Process the data start_location and end_location
+                            strLat_start = JSON.stringify(resultLat_start);
+                            strLon_start = JSON.stringify(resultLon_start);
+                            strLat_end = JSON.stringify(resultLat_end);
+                            strLon_end = JSON.stringify(resultLon_end);
+                            str_name = JSON.stringify(result_name);
+
+                            strLat_start = jQuery.parseJSON(strLat_start);
+                            strLon_start = jQuery.parseJSON(strLon_start);
+                            strLat_end = jQuery.parseJSON(strLat_end);
+                            strLon_end = jQuery.parseJSON(strLon_end);
+                            str_name = jQuery.parseJSON(str_name);
+
+                            arrLat_start = strLat_start.split(",");
+                            arrLon_start = strLon_start.split(",");
+                            arrLat_end = strLat_end.split(",");
+                            arrLon_end = strLon_end.split(",");
+                            arr_name = str_name.split(",");
+
+                            for (var k=0; k<arrLat_end.length-1; k++) {
+                                // deal with the start and end points coordinates
+                                var obj1 = {location: {lat: Number(arrLat_start[k]), lng: Number(arrLon_start[k])}, name: k};
+                                var obj2 = {
+                                    location: {lat: Number(arrLat_end[k]), lng: Number(arrLon_end[k])},
+                                    name: arr_name[k],
+                                    Walking_cost: arr_Walking_cost[k],
+                                    ticket_cost: arr_ticket_cost[k],
+                                    distance_cost:arr_distance_cost[k],
+                                    time_cost:arr_time_cost[k],
+                                    hotelLevel_cost:arr_hotelLevel_cost[k],
+                                    hotelprice_cost:arr_hotelprice_cost[k],
+                                    hotelInterest_cost: arr_hotelInterest_cost[k]
+                                };
+                                startPoints.push(obj1);
+                                endPoints.push(obj2);
+                            }
+
+                            // this is help to remove the same endpoints in array
+                            results = removeDuplicates(endPoints, "name");
+                            setTimeout($.unblockUI,10);
+                            //var location = startPoints[0].location;
+                            //map.panTo(location);
+                            map.setZoom(13);
+                            search();
+                        }
+                    });
+                }
+                // this function will help to remove the same end points
+                function removeDuplicates(originalArray, prop) {
+                    var newArray = [];
+                    var lookupObject  = {};
+
+                    for(var i in originalArray) {
+                        lookupObject[originalArray[i][prop]] = originalArray[i];
+                    }
+
+                    for(i in lookupObject) {
+                        newArray.push(lookupObject[i]);
+                    }
+                    return newArray;
+                }
+
+            </script>
+            <div id="content">
+                This is the test
+            </div>
+            <script>
+                // user selected the country
+                var GPSCoordinate,locationCoordinate,fixedcoordinates;
+                const value = "us";
+                var map, infoWindow;
+                var markers = [];
+                var flightPath = [];
+                var line = [];
+                var lineStart = [];
+                var specialMarker;
+                var Busmarker;
+                var gmarker =[];
+                var popup;
+                var marker;
+                var ClickMarker;
+                var addressUrl ="";
+                var cityCircle;
+                var gecodeMarker;
+                var addressCoordinate;
+                var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
+
+                // set the google map
+                function initMap() {
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 5,
+                        center: {lat: 39, lng: -94},
+                        mapTypeId: 'terrain'
+                    });
+
+                    // set the information window
+                    infoWindow = new google.maps.InfoWindow({
+                        content: document.getElementById('info-content')
+                    });
+
+                    //when user use the address search
+                    var geocoder = new google.maps.Geocoder();
+
+                    document.getElementById('submit').addEventListener('click', function () {
+                        var address = document.getElementById('address').value;
+                        map.setZoom(13);
+                        geocodeAddress(geocoder, address, map);
+                    });
+
+                    addClickEvent();
+                }
+
+                // use the google service to get the location infornation
+                function getAddress(address){
+                    addressUrl = "https://maps.googleapis.com/maps/api/geocode/json?address="+address+"&key=AIzaSyAthx9dp5y1fe08hEQ-VOuN7lyCANIIRlM";
+                    $.ajax({
+                        type:"GET",
+                        url:addressUrl,
+                        dataType:"json",
+                        async:false,
+                        success:function(data){
+                            addressCoordinate = data;
+                        }
+                    });
+                    //console.log(locationCoordinate);
+                    locationCoordinate = addressCoordinate.results[0].geometry.location
+                }
+
+                // When the user selects a city, get the place details for the city and
+                // zoom the map in on the city.
+                function onPlaceChanged() {
+                    RemovePopup();
+                    Rebuild_data();
+                }
+
+                // Search for hotels in the selected city, within the viewport of the map.
+                function search() {
+                    var search = {
+                        bounds: map.getBounds(),
+                        types: ['lodging']
+                    };
+                    removeGeCoderMarker();
+                    RemoveClickMarker();
+                    removeBustationMarker();
+                    removeSpecialMarker();
+                    clearDashLine();
+                    clearDashLineStart();
+                    clearPolylines();
+                    clearResults();
+                    clearMarkers();
+                    removeMarker();
+
+                    // Create a marker for each hotel found, and
+                    // assign a letter of the alphabetic to each marker icon.
+
+                    for (var i = 0; i < results.length; i++) {
+                        var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                        var markerIcon = MARKER_PATH + markerLetter + '.png';
+                        // Use marker animation to drop the icons incrementally on the map.
+                        markers[i] = new google.maps.Marker({
+                            position: results[i].location,
+                            animation: google.maps.Animation.DROP,
+                            icon: markerIcon
+                        });
+                        // If the user clicks a hotel marker, show the details of that hotel
+                        // in an info window.
+                        markers[i].placeResult = results[i];
+                        google.maps.event.addListener(markers[i], 'click', showPath);
+                        map.setCenter(markers[i].getPosition());
+                        setTimeout(dropMarker(i), i * 100);
+                        addResult(results[i], i);
+                    }
+                    addMarker(startPoints,map);
+                }
+
+                // Clear all markers
+                function clearMarkers() {
+                    for (var i = 0; i < markers.length; i++) {
+                        if (markers[i]) {
+                            markers[i].setMap(null);
+                        }
+                    }
+                    markers = [];
+                }
+
+                // hide all markers, but do not remove in array
+                function hideMarkers(){
+                    for (var i = 0; i < markers.length; i++) {
+                        if (markers[i]) {
+                            markers[i].setMap(null);
+                        }
+                    }
+                }
+
+                // clear all poly lines
+                function clearPolylines(){
+                    for (var i=0; i< flightPath.length;i++){
+                        if(flightPath[i]){
+                            flightPath[i].setMap(null);
+                        }
+                    }
+                }
+
+                // drop the marker
+                function dropMarker(i) {
+                    return function() {
+                        markers[i].setMap(map);
+                    };
+                }
+
+                // add all the result into the list
+                function addResult(result, i) {
+                    var results = document.getElementById('results');
+                    var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                    var markerIcon = MARKER_PATH + markerLetter + '.png';
+
+                    var tr = document.createElement('tr');
+                    tr.style.backgroundColor = (i % 2 === 0 ? '#F0F0F0' : '#FFFFFF');
+                    tr.onclick = function() {
+                        google.maps.event.trigger(markers[i], 'click');
+                        $('#results > tr').each(function(index){
+                            var color = index % 2 === 0 ? '#F0F0F0' : '#FFFFFF';
+                            $(this).css('background-color', color);
+                        });
+                        tr.style.backgroundColor = ('#C9C9C9');
+                    };
+
+
+                    var iconTd = document.createElement('td');
+                    var nameTd = document.createElement('td');
+                    var icon = document.createElement('img');
+                    icon.src = markerIcon;
+                    icon.setAttribute('class', 'placeIcon');
+                    icon.setAttribute('className', 'placeIcon');
+                    var name = document.createTextNode(result.name);
+                    iconTd.appendChild(icon);
+                    nameTd.appendChild(name);
+                    tr.appendChild(iconTd);
+                    tr.appendChild(nameTd);
+                    results.appendChild(tr);
+                    var location = startPoints[0].location;
+                    map.panTo(location);
+                }
+
+                // remove all the result in the array
+                function clearResults() {
+                    var results = document.getElementById('results');
+                    while (results.childNodes[0]) {
+                        results.removeChild(results.childNodes[0]);
+                    }
+                }
+
+                // show the path on the google map
+                function showPath(){
+                    var marker = this;
+                    var k = 0;
+                    var startIDLat, startIDLng;
+                    var busStations =[];
+                    var str_Walking_cost, str_ticket_cost, str_distance_cost, str_time_cost;
+                    var arr_Walking_cost, arr_ticket_cost, arr_distance_cost, arr_time_cost;
+                    var result_Walking_cost="",result_ticket_cost="",result_distance_cost="",result_time_cost="";
+
+                    RemoveClickMarker();
+                    removeCircle();
+                    clearDashLine();
+                    clearDashLineStart();
+                    hideMarkers();
+                    clearPolylines();
+                    removeBustationMarker();
+                    removeSpecialMarker();
+
+                    // For Loop to read the JSON one by one and draw the lines one by one
+                    // And print the path line by line
+                    for (var index=0; index < result.length; index++) {
+                        var resultLat_ID = "";
+                        var resultLon_ID = "";
+                        var j;
+
+                        // check weather or not the nodeID is empty
+                        if(result[index].end_location[0]===marker.placeResult.location.lat && result[index].end_location[1]===marker.placeResult.location.lng) {
+                            if (result[index]["nodeIDs"].length === 0) {
+                                var dash = [{
+                                    lat: Number(arrLat_start[1]),
+                                    lng: Number(arrLon_start[1])
+                                }, {
+                                    lat: Number(marker.placeResult.location.lat),
+                                    lng: Number(marker.placeResult.location.lng)
+                                }];
+                                Dashed_Line(dash,index);
+                                map.setZoom(16);
+                                var start_location = {lat: Number(arrLat_start[1]), lng: Number(arrLon_start[1])};
+                                map.panTo(start_location);
+                                k++;
+                            } else {
+                                // add cost in to result cost
+                                result_Walking_cost += result[index]["costs"][0]+",";
+                                result_ticket_cost  += result[index]["costs"][1]+",";
+                                result_distance_cost += result[index]["costs"][2]+",";
+                                result_time_cost += result[index]["costs"][3]+",";
+                                // process the data 7 cost
+                                str_Walking_cost = JSON.stringify(result_Walking_cost);
+                                str_ticket_cost = JSON.stringify(result_ticket_cost);
+                                str_distance_cost = JSON.stringify(result_distance_cost);
+                                str_time_cost = JSON.stringify(result_time_cost);
+
+                                str_Walking_cost = jQuery.parseJSON(str_Walking_cost);
+                                str_ticket_cost = jQuery.parseJSON(str_ticket_cost);
+                                str_distance_cost = jQuery.parseJSON(str_distance_cost);
+                                str_time_cost = jQuery.parseJSON(str_time_cost);
+
+                                arr_Walking_cost = str_Walking_cost.split(",");
+                                arr_ticket_cost = str_ticket_cost.split(",");
+                                arr_distance_cost = str_distance_cost.split(",");
+                                arr_time_cost = str_time_cost.split(",");
+
+                                arr_Walking_cost = arr_Walking_cost.reverse();
+                                arr_ticket_cost = arr_ticket_cost.reverse();
+                                arr_distance_cost = arr_distance_cost.reverse();
+                                arr_time_cost = arr_time_cost.reverse();
+
+                                // add nodes ID into result_ID
+                                for (j in result[index]["nodeIDs"]) {
+                                    resultLat_ID += result[index].nodeIDs[j]["lat"] + ",";
+                                    resultLon_ID += result[index]["nodeIDs"][j]["lng"] + ",";
+                                }
+                                var start_locations = {lat: Number(arrLat_start[1]), lng: Number(arrLon_start[1])};
+                                map.panTo(start_locations);
+                                map.setZoom(15);
+
+                                var arrLat_ID, arrLon_ID, strLat_ID, strLon_ID;
+                                // Process the data ID lat and Lng
+                                strLat_ID = JSON.stringify(resultLat_ID);
+                                strLon_ID = JSON.stringify(resultLon_ID);
+                                strLat_ID = jQuery.parseJSON(strLat_ID);
+                                strLon_ID = jQuery.parseJSON(strLon_ID);
+                                arrLat_ID = strLat_ID.split(",");
+                                arrLon_ID = strLon_ID.split(",");
+                                startIDLat = arrLat_ID;
+                                startIDLng = arrLon_ID;
+                                arrLat_ID = arrLat_ID.reverse();
+                                arrLon_ID = arrLon_ID.reverse();
+
+                                var flightPlanCoordinates = [];
+                                var x = 1;
+                                var getRandomColor = RandomColor();
+
+                                // add the station coordinates into the var obj
+                                while (!isNaN(Number(arrLon_ID[x + 1])) && !isNaN(Number(arrLat_ID[x + 1]))) {
+                                    //deal with the station coordinates
+                                    var temp = {lat: Number(arrLat_ID[x]), lng: Number(arrLon_ID[x])};
+                                    busStations.push(temp);
+                                    flightPlanCoordinates.push(temp);
+                                    x++;
+                                }
+
+                                // draw the transportation path into google map
+                                flightPath[index] = new google.maps.Polyline({
+                                    path: flightPlanCoordinates,
+                                    geodesic: true,
+                                    strokeColor: getRandomColor,
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 2
+                                });
+                                if(flightPath[index]) {
+                                    flightPath[index].setMap(map);
+                                }
+
+                                // add the dash lines from the start point to first transportation station and from the last transportation to the end point
+                                var dashLineStart = [{
+                                    lat: Number(arrLat_start[1]),
+                                    lng: Number(arrLon_start[1])
+                                }, {lat: Number(startIDLat[x - 1]), lng: Number(startIDLng[x - 1])}];
+                                var dashLineEnd = [{
+                                    lat: Number(startIDLat[1]),
+                                    lng: Number(startIDLng[1])
+                                }, {
+                                    lat: Number(marker.placeResult.location.lat),
+                                    lng: Number(marker.placeResult.location.lng)
+                                }];
+                                if ((dashLineEnd[1].lat !== 0 && dashLineEnd[1].lng !== 0) || ((dashLineStart[1].lat !== 0 && dashLineStart[1].lng))) {
+                                    Dashed_Line_Start(dashLineStart,index);
+                                    Dashed_Line(dashLineEnd,index);
+                                }
+                            }
+                        }
+                    }
+                    addMarkerForBusStation(busStations,map);
+                    addSpecialMarker(marker,map);
+                    AddPopup(marker,arr_Walking_cost, arr_ticket_cost, arr_distance_cost, arr_time_cost);
+                }
+
+                // add the dash line, it will be used for show the walking path
+                function Dashed_Line(path,x){
+                    // Define a symbol using SVG path notation, with an opacity of 1.
+                    var lineSymbol = {
+                        path: 'M 0,-1 0,1',
+                        strokeOpacity: 1.0,
+                        strokeColor: RandomColor(),
+                        strokeWeight: 2,
+                        scale: 4
+                    };
+
+                    // Create the polyline, passing the symbol in the 'icons' property.
+                    // Give the line an opacity of 0.
+                    // Repeat the symbol at intervals of 20 pixels to create the dashed effect.
+                    line[x] = new google.maps.Polyline({
+                        path: path,
+                        strokeOpacity: 0,
+                        icons: [{
+                            icon: lineSymbol,
+                            offset: '0',
+                            repeat: '20px'
+                        }],
+                        map: map
+                    });
+                }
+
+                // add the dash line from the query point to the bus stop
+                function Dashed_Line_Start(path,x){
+                    // Define a symbol using SVG path notation, with an opacity of 1.
+                    var lineSymbol = {
+                        path: 'M 0,-1 0,1',
+                        strokeOpacity: 1.0,
+                        strokeColor: RandomColor(),
+                        strokeWeight: 2,
+                        scale: 4
+                    };
+
+                    // Create the polyline, passing the symbol in the 'icons' property.
+                    // Give the line an opacity of 0.
+                    // Repeat the symbol at intervals of 20 pixels to create the dashed effect.
+                    lineStart[x] = new google.maps.Polyline({
+                        path: path,
+                        strokeOpacity: 0,
+                        icons: [{
+                            icon: lineSymbol,
+                            offset: '0',
+                            repeat: '20px'
+                        }],
+                        map: map
+                    });
+                }
+
+                // Remove the query point to busStation dashlines
+                function clearDashLineStart(){
+                    for(var i=0; i<line.length; i++){
+                        if(lineStart[i]){
+                            lineStart[i].setMap(null);
+                        }
+                    }
+                }
+
+                // Clear all the dash lines
+                function clearDashLine(){
+                    for(var i=0; i<line.length; i++){
+                        if(line[i]){
+                            line[i].setMap(null);
+                        }
+                    }
+                }
+
+
+                function showCircleGPS(){
+                    // draw the cricle in to the map
+                    fixedcoordinates = GPSCoordinate;
+                    console.log(fixedcoordinates);
+                }
+
+                function showCircleLocation(){
+                    // draw the cricle in to the map
+                    fixedcoordinates = locationCoordinate;
+                    console.log(locationCoordinate);
+                    console.log(fixedcoordinates);
+                }
+
+                // function will help draw the circle
+                function addCircle(map){
+                    var cityCircleRadius = parseInt(document.getElementById("scope").value);
+                    // Add the circle for this city to the map.
+                    cityCircle = new google.maps.Circle({
+                        strokeColor: '#38FFF3',
+                        strokeOpacity: 0.4,
+                        strokeWeight: 2,
+                        fillColor: '#38FFF3',
+                        fillOpacity: 0.35,
+                        map: map,
+                        center: fixedcoordinates,
+                        radius: cityCircleRadius
+                    });
+                }
+
+                function removeCircle(){
+                    if(cityCircle){
+                        cityCircle.setMap(null);
+                    }
+                }
+
+                // Use address to update the map
+                function geocodeAddress(geocoder,address, resultsMap) {
+                    geocoder.geocode({'address': address}, function(results, status) {
+                        if (status === 'OK') {
+                            resultsMap.setCenter(results[0].geometry.location);
+                            gecodeMarker = new google.maps.Marker({
+                                map: resultsMap,
+                                position: results[0].geometry.location,
+                                zoom:13
+                            });
+                        } else {
+                            alert('Geocode was not successful for the following reason: ' + status);
+                        }
+                    });
+                }
+
+                function removeGeCoderMarker(){
+                    if(gecodeMarker){
+                        gecodeMarker.setMap(null);
+                    }
+                }
+
+                // function will help Add markers into the map
+                function addMarker (location, map){
+                    // Create the names of the lables
+                    var labels ='';
+                    // add the marker at the location into map
+                        var coordinate = location[0].location;
+                        marker = new google.maps.Marker({
+                            position: {lat: coordinate.lat,lng: coordinate.lng},
+                            label: labels,
+                            map: map
+                        });
+
+                }
+
+                function removeMarker(){
+                    if(marker){
+                        marker.setMap(null);
+                    }
+                }
+
+                // function will help Add the bus station markers into the map
+                function addMarkerForBusStation (location, map){
+                    // Create the names of the labels
+                    var image = "BusStation.png";
+                    var labels ='';
+                    // add the marker at the location into map
+                    for(var i = 0; i<location.length ; i++) {
+                        Busmarker = new google.maps.Marker({
+                            position: location[i],
+                            label: labels,
+                            icon: image,
+                            map: map
+                        });
+                    gmarker.push(Busmarker);
+                    }
+                }
+
+                // function will help to remove the marker for bus station
+                function removeBustationMarker(){
+                    for(var i=0; i<gmarker.length; i++){
+                        if(gmarker[i].getMap()!== null){
+                            gmarker[i].setMap(null);
+                        }
+                    }
+                }
+
+                // function will help Add markers into the map with the special marker
+                function addSpecialMarker (location, map){
+                    // Create the names of the labels
+                    var labels ='';
+                    // set the special marker
+                    var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+                    // add the marker at the location into map
+                        var coordinate = location.placeResult.location;
+                        specialMarker = new google.maps.Marker({
+                            position: {lat: coordinate.lat,lng: coordinate.lng},
+                            label: labels,
+                            icon: image,
+                            map: map
+                        });
+                }
+
+                function removeSpecialMarker(){
+                    if(specialMarker){
+                        specialMarker.setMap(null);
+                    }
+                }
+
+                // function will get the random color code
+                function RandomColor(){
+                    var letters = '0123401234abcabc'.split('');
+                    var color="#";
+                    for(var i=0;i<6;i++){
+                        color += letters[Math.floor(Math.random() * letters.length)];
+                    }
+                    return color;
+                }
+
+                // This function will zoom to the new city when user select the city
+                function ZoomCity(location) {
+                    map.panTo(location);
+                    map.setZoom(13);
+                }
+
+                // if we use the user's location
+                function GPS() {
+
+                    // declare coordinate
+                    GPSCoordinate = {lat: 40.74, lng: -73.98};
+
+                    // get the user location
+                    infoWindow = new google.maps.InfoWindow;
+
+                    // Try HTML5 geolocation.
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (position) {
+                            var pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            GPSCoordinate.lng = pos.lng;
+                            GPSCoordinate.lat = pos.lat;
+                            infoWindow.setPosition(pos);
+                            infoWindow.setContent('Location found.');
+                            infoWindow.open(map);
+                            map.setCenter(pos);
+                            map.setZoom(14);
+                        }, function () {
+                            handleLocationError(true, infoWindow, map.getCenter());
+                        });
+                    } else {
+                        // Browser doesn't support Geolocation
+                        handleLocationError(false, infoWindow, map.getCenter());
+                    }
+
+                }
+
+                // Add the click event and get the coordinates when click map
+                function addClickEvent(){
+                    removeCircle();
+                    map.addListener('click', function(e) {
+                        placeMarkerAndPanTo(e.latLng, map);
+                        var ClickLocation = Number(e.latLng.lat())+","+Number(e.latLng.lng());
+                        $("#address").val(ClickLocation);
+                    });
+                }
+
+                // Add the marker when click the map
+                function placeMarkerAndPanTo(latLng, map) {
+                    ClickMarker = new google.maps.Marker({
+                        position: latLng,
+                        map: map
+                    });
+                    map.panTo(latLng);
+                }
+                // Remove the click marker
+                function RemoveClickMarker(){
+                    if(ClickMarker){
+                        ClickMarker.setMap(null);
+                    }
+                }
+
+                function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+                    infoWindow.setPosition(pos);
+                    infoWindow.setContent(browserHasGeolocation ?
+                        'Error: The Geolocation service failed.' :
+                        'Error: Your browser doesn\'t support geolocation.');
+                    infoWindow.open(map);
+                }
+
+                function AddPopup(marker,Walking_cost, ticket_cost, distance_cost, time_cost){
+                    var content="";
+                    var Hotel_level =  marker.placeResult.hotelLevel_cost;
+                    var Hotel_price =  marker.placeResult.hotelprice_cost;
+                    content += "POI name: "
+                    content += marker.placeResult.name;
+                    content += "\n";
+                    content += "POI Star: ";
+                    // Decide which level of the hotel
+                    if(Hotel_level >0 && Hotel_level <=1){
+                        content += "🌟";
+                    }
+                    else if (Hotel_level>1 && Hotel_level <=2){
+                        content += "🌟🌟";
+                    }
+                    else if (Hotel_level>2 && Hotel_level <=3){
+                        content += "🌟🌟🌟";
+                    }
+                    else if (Hotel_level>3 && Hotel_level <=4){
+                        content += "🌟🌟🌟🌟";
+                    }
+                    else if (Hotel_level>4 && Hotel_level <=5){
+                        content += "🌟🌟🌟🌟🌟";
+                    }
+                    else{
+                        content += "No result";
+                    }
+
+                    content += "\nPOI Price: "
+                    // Decide which price of the hotel
+                    if(Hotel_price >0 && Hotel_price <=1){
+                        content += "💲";
+                    }
+                    else if (Hotel_price>1 && Hotel_price <=2){
+                        content += "💲💲";
+                    }
+                    else if (Hotel_price>2 && Hotel_price <=3){
+                        content += "💲💲💲";
+                    }
+                    else if (Hotel_price>3 && Hotel_price <=4){
+                        content += "💲💲💲💲";
+                    }
+                    else if (Hotel_price>4 && Hotel_price <=5){
+                        content += "💲💲💲💲💲";
+                    }
+                    else{
+                        content += "No result";
+                    }
+
+                    content+="\nPOI Interest level: "
+                    content += marker.placeResult.hotelInterest_cost;
+
+                    if(Walking_cost.length >= 1){
+                        for(var i=1; i<Walking_cost.length; i++){
+                            var WalkingDistance=0,Ticket=0,Distance=0,TimeCost=0;
+                            content += "\nPath "+i+": Costs ";
+                            WalkingDistance = Math.round(Walking_cost[i]/1000 * 100) / 100;
+                            content += WalkingDistance + " ,";
+                            Ticket += Math.round(ticket_cost[i] * 100) / 100;
+                            content += Ticket + " ,";
+                            Distance = Math.round(distance_cost[i]/1000 * 100) / 100;
+                            content += Distance + " ,";
+                            TimeCost = Math.round(time_cost[i] * 100) / 100;
+                            content += TimeCost + " ";
+                        }
+                    }
+
+                    /*
+                    content += "\nTotal distance from query point to POI:";
+                    var Distance;
+                    Distance = Number(marker.placeResult.distance_cost);
+                    Distance = Math.round(Distance * 100) / 100;
+                    content += Distance;
+                    content += " meters";
+                    content += "\nPath 1 Estimate arrive time: ";
+                    var TimeCost = Number(marker.placeResult.time_cost);
+                    TimeCost = Math.round(TimeCost * 100) / 100;
+                    content += TimeCost;
+                    content += " minutes";
+                    content += "\nPath 1 Estimate ticket cost: ";
+                    var TicketCost = Number(marker.placeResult.ticket_cost);
+                    TicketCost = Math.round(TicketCost * 100) / 100;
+                    content += TicketCost;
+                    content += " dollors";
+                    content += "\nPath 1 Estimate Walking Distance: ";
+                    var WalkingDistance;
+                    WalkingDistance = marker.placeResult.Walking_cost;
+                    WalkingDistance = Math.round(WalkingDistance * 100) / 100;
+                    content += WalkingDistance;
+                    content += " meters";*/
+
+
+                    document.getElementById("content").innerText = content;
+                    var location = marker.placeResult.location;
+                    Popup = createPopupClass();
+                    popup = new Popup(
+                        new google.maps.LatLng(location),
+                        document.getElementById('content'));
+                    popup.setMap(map);
+                }
+
+                function RemovePopup(){
+                    if(popup){
+                        Popup = createPopupClass();
+                        popup = new Popup(
+                            new google.maps.LatLng(null,null),
+                            document.getElementById('content'));
+                        popup.setMap(map);
+                    }
+                }
+
+                // function to reload the page
+                function reloadPage(){
+                    location.reload()
+                }
+
+                /**
+                 * Returns the Popup class.
+                 *
+                 * Unfortunately, the Popup class can only be defined after
+                 * google.maps.OverlayView is defined, when the Maps API is loaded.
+                 * This function should be called by initMap.
+                 */
+                function createPopupClass() {
+                    /**
+                     * A customized popup on the map.
+                     * @param {!google.maps.LatLng} position
+                     * @param {!Element} content The bubble div.
+                     * @constructor
+                     * @extends {google.maps.OverlayView}
+                     */
+                    function Popup(position, content) {
+                        this.position = position;
+
+                        content.classList.add('popup-bubble');
+
+                        // This zero-height div is positioned at the bottom of the bubble.
+                        var bubbleAnchor = document.createElement('div');
+                        bubbleAnchor.classList.add('popup-bubble-anchor');
+                        bubbleAnchor.appendChild(content);
+
+                        // This zero-height div is positioned at the bottom of the tip.
+                        this.containerDiv = document.createElement('div');
+                        this.containerDiv.classList.add('popup-container');
+                        this.containerDiv.appendChild(bubbleAnchor);
+
+                        // Optionally stop clicks, etc., from bubbling up to the map.
+                        google.maps.OverlayView.preventMapHitsAndGesturesFrom(this.containerDiv);
+                    }
+                    // ES5 magic to extend google.maps.OverlayView.
+                    Popup.prototype = Object.create(google.maps.OverlayView.prototype);
+
+                    /** Called when the popup is added to the map. */
+                    Popup.prototype.onAdd = function() {
+                        this.getPanes().floatPane.appendChild(this.containerDiv);
+                    };
+
+                    /** Called when the popup is removed from the map. */
+                    Popup.prototype.onRemove = function() {
+                        if (this.containerDiv.parentElement) {
+                            this.containerDiv.parentElement.removeChild(this.containerDiv);
+                        }
+                    };
+
+                    /** Called each frame when the popup needs to draw itself. */
+                    Popup.prototype.draw = function() {
+                        var divPosition = this.getProjection().fromLatLngToDivPixel(this.position);
+
+                        // Hide the popup when it is far out of view.
+                        var display =
+                            Math.abs(divPosition.x) < 4000 && Math.abs(divPosition.y) < 4000 ?
+                                'block' :
+                                'none';
+
+                        if (display === 'block') {
+                            this.containerDiv.style.left = divPosition.x + 'px';
+                            this.containerDiv.style.top = divPosition.y + 'px';
+                        }
+                        if (this.containerDiv.style.display !== display) {
+                            this.containerDiv.style.display = display;
+                        }
+                    };
+
+                    return Popup;
+                }
+
+                // Get the place details for a hotel. Show the information in an info window,
+                // anchored on the marker for the hotel that the user selected.
+                /* function showInfoWindow() {
+
+                     var marker = this;
+                     console.log(marker);
+                     places.getDetails({placeId: marker.placeResult.place_id},
+                         function(place, status) {
+                             if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                                 return;
+                             }
+                             infoWindow.open(map, marker);
+                             buildIWContent(place);
+                         });
+                 }
+
+                 // Load the place information into the HTML elements used by the info window.
+                 function buildIWContent(place) {
+                     document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
+                         'src="' + place.icon + '"/>';
+                     document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
+                         '">' + place.name + '</a></b>';
+                     document.getElementById('iw-address').textContent = place.vicinity;
+
+                     if (place.formatted_phone_number) {
+                         document.getElementById('iw-phone-row').style.display = '';
+                         document.getElementById('iw-phone').textContent =
+                             place.formatted_phone_number;
+                     } else {
+                         document.getElementById('iw-phone-row').style.display = 'none';
+                     }
+
+                     // Assign a five-star rating to the hotel, using a black star ('&#10029;')
+                     // to indicate the rating the hotel has earned, and a white star ('&#10025;')
+                     // for the rating points not achieved.
+                     if (place.rating) {
+                         var ratingHtml = '';
+                         for (var i = 0; i < 5; i++) {
+                             if (place.rating < (i + 0.5)) {
+                                 ratingHtml += '&#10025;';
+                             } else {
+                                 ratingHtml += '&#10029;';
+                             }
+                             document.getElementById('iw-rating-row').style.display = '';
+                             document.getElementById('iw-rating').innerHTML = ratingHtml;
+                         }
+                     } else {
+                         document.getElementById('iw-rating-row').style.display = 'none';
+                     }
+
+                     // The regexp isolates the first part of the URL (domain plus subdomain)
+                     // to give a short URL for displaying in the info window.
+                     if (place.website) {
+                         var fullUrl = place.website;
+                         var website = hostnameRegexp.exec(place.website);
+                         if (website === null) {
+                             website = 'http://' + place.website + '/';
+                             fullUrl = website;
+                         }
+                         document.getElementById('iw-website-row').style.display = '';
+                         document.getElementById('iw-website').textContent = website;
+                     } else {
+                         document.getElementById('iw-website-row').style.display = 'none';
+                     }
+                 }*/
+
+            </script>
+
+
+        <div id="listing">
+            <table id="resultsTable">
+                <tbody id="results"></tbody>
+            </table>
+        </div>
+    </div>
+        <!--Set the reference
+        <div class="content_footer" style="text-align: center;">
+                New Mexico State University
+        </div>-->
+    </div>
+
+    <!-- Add Google Map API with key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLURsv27UDMdwmCmhE-M1U5LIUXboMTDE&libraries=places&callback=initMap"
+            async defer>
+    </script>
+
+
+</body>
+</html>
