@@ -439,8 +439,13 @@
                     UserInputAddress_to_accordinates();
                     var Scope = document.getElementById("scope").value;
                     if(Method === "ExactImprovedIndex"){
-                        url = "http://localhost:8080/csDemoWS/rest/query/"+Method+"/"+City+"/"+locationCoordinate.lat+"/"+locationCoordinate.lng+"/"+Type+"/"+BusStop;
-                        onPlaceChanged();
+                        if(confirm("You Selected the Exact improved method, it might take a while to process, Do you want to continue?")) {
+                            url = "http://localhost:8080/csDemoWS/rest/query/" + Method + "/" + City + "/" + locationCoordinate.lat + "/" + locationCoordinate.lng + "/" + Type + "/" + BusStop;
+                            onPlaceChanged();
+                        }
+                        else{
+                            // do Nothing
+                        }
                     }
                     else{
                         if(Scope === ""){
