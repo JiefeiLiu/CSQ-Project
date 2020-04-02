@@ -891,6 +891,7 @@
                 function readTextFile(file)
                 {
                     var rawFile = new XMLHttpRequest();
+                    search_suggestion = [];
                     rawFile.open("GET", file, false);
                     rawFile.onreadystatechange = function ()
                     {
