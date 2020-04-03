@@ -344,7 +344,7 @@
 
                 $(document).ready(function(){
                     $('#letter > button:nth-child(10)').click(function () {
-                        SetPreloadUrl();
+                        //SetPreloadUrl();
                     });
 
 
@@ -879,6 +879,7 @@
                 function Warning(){
                     if(PreloadMethod === "ExactImprovedIndex"){
                         if(confirm("You Selected the Exact improved method, it might take more than 10 minutes to process, Do you want to continue?")){
+                            SetPreloadUrl();
                             onPlaceChanged();
                             ZoomCity(PreloadLocationIDShow);
                         }
@@ -887,6 +888,7 @@
                         }
                     }
                     else{
+                        SetPreloadUrl();
                         onPlaceChanged();
                         ZoomCity(PreloadLocationIDShow);
                     }
