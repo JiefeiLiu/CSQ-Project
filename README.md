@@ -1,6 +1,8 @@
 # CSQ-Project
 CSQ System: A System to Support Constrained Skyline Queries on Transportation Networks
 
+To run the program please use the chrome to open SQCMCTN.html. 
+
 For the CSQ system, we preload the points of interest and the public transportation networks in three cities, including New York (NY), Los Angeles (LA), and San Francisco (SF). The city is a place where the query point resides in
 
 We provide 4 different ways to let users input a query point. 
